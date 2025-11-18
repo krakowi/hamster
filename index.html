@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Тапалка Хомяк Cameron Smit</title>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background: #ffeebc;
+        text-align: center;
+        margin-top: 50px;
+    }
+
+    #hamster {
+        width: 250px;
+        cursor: pointer;
+        transition: transform 0.1s;
+    }
+
+    #hamster:active {
+        transform: scale(0.9);
+    }
+
+    #balance {
+        font-size: 28px;
+        margin-top: 20px;
+        font-weight: bold;
+    }
+
+    #reset {
+        margin-top: 20px;
+        padding: 10px 20px;
+        font-size: 16px;
+        cursor: pointer;
+    }
+</style>
+</head>
+<body>
+
+<h1>Тапай хомяка Cameron Smit 🐹</h1>
+
+<img id="hamster" src="https://i.imgur.com/OYu8G7a.png" alt="Hamster">
+
+<div id="balance">Баланс: 0</div>
+
+<button id="reset">Сбросить баланс</button>
+
+<script>
+    // Загружаем баланс из localStorage
+    let balance = parseInt(localStorage.getItem("hamster_balance")) || 0;
+    let balanceEl = document.getElementById("balance");
+    let hamster = document.getElementById("hamster");
+
+    function updateBalance() {
+        balanceEl.textContent = "Баланс: " + balance;
+        localStorage.setItem("hamster_balance", balance);
+    }
+
+    // Первое обновление баланса
+    updateBalance();
+
+    // Тап по хомяку
+    hamster.addEventListener("click", () => {
+        balance += 1;
+        updateBalance();
+    });
+
+    // Сброс баланса
+    document.getElementById("reset").addEventListener("click", () => {
+        balance = 0;
+        updateBalance();
+    });
+</script>
+
+</body>
+</html>
