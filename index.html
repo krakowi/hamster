@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<title>Тапалка Хомяк Cameron Smit</title>
+<title>Тапалка Хомяк</title>
 <style>
     body {
         font-family: Arial, sans-serif;
@@ -21,9 +21,9 @@
         transform: scale(0.9);
     }
 
-    #balance {
-        font-size: 28px;
-        margin-top: 20px;
+    #balance, #nickname {
+        font-size: 24px;
+        margin-top: 15px;
         font-weight: bold;
     }
 
@@ -33,11 +33,31 @@
         font-size: 16px;
         cursor: pointer;
     }
+
+    #top {
+        margin-top: 40px;
+        font-size: 20px;
+        font-weight: bold;
+    }
+
+    table {
+        margin: 0 auto;
+        border-collapse: collapse;
+        margin-top: 10px;
+    }
+
+    td, th {
+        border: 1px solid black;
+        padding: 6px 12px;
+        background: #fff8d0;
+    }
 </style>
 </head>
 <body>
 
-<h1>Тапай хомяка Cameron Smit 🐹</h1>
+<h1>Тапай хомяка 🐹</h1>
+
+<div id="nickname"></div>
 
 <img id="hamster" src="https://i.imgur.com/OYu8G7a.png" alt="Hamster">
 
@@ -45,31 +65,99 @@
 
 <button id="reset">Сбросить баланс</button>
 
+<div id="top">Глобальный ТОП</div>
+<table id="topTable"></table>
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
 <script>
-    // Загружаем баланс из localStorage
+
+    // 🔥 ВСТАВЬ СВОЙ FIREBASE КОНФИГ СЮДА:
+    const firebaseConfig = {
+        apiKey: "AIzaSyCLkWSBz7VmhLiCnrojZb_TGnVm4aCpYhM",
+        authDomain: "hamster-b5a40.firebaseapp.com",
+        databaseURL: "https://hamster-b5a40-default-rtdb.firebaseio.com",
+        projectId: "hamster-b5a40",
+        storageBucket: "hamster-b5a40.firebasestorage.app",
+        messagingSenderId: "506639754076",
+        appId: "1:506639754076:web:67b7f7ababc23a29ff1799",
+        measurementId: "G-M3WP06KKX4"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    // --- НИК ---
+    let nick = localStorage.getItem("hamster_nick");
+    if (!nick) {
+        nick = prompt("Введите ваш ник:");
+        if (!nick || nick.trim() === "") nick = "Безымянный";
+        localStorage.setItem("hamster_nick", nick);
+    }
+    document.getElementById("nickname").textContent = "Ваш ник: " + nick;
+
+    // --- БАЛАНС ---
     let balance = parseInt(localStorage.getItem("hamster_balance")) || 0;
-    let balanceEl = document.getElementById("balance");
-    let hamster = document.getElementById("hamster");
+    const balanceEl = document.getElementById("balance");
+    const hamster = document.getElementById("hamster");
 
     function updateBalance() {
         balanceEl.textContent = "Баланс: " + balance;
         localStorage.setItem("hamster_balance", balance);
+
+        updateOnlineScore();
     }
 
-    // Первое обновление баланса
     updateBalance();
 
-    // Тап по хомяку
+    // --- ТАП ---
     hamster.addEventListener("click", () => {
         balance += 1;
         updateBalance();
     });
 
-    // Сброс баланса
+    // --- СБРОС ---
     document.getElementById("reset").addEventListener("click", () => {
         balance = 0;
         updateBalance();
     });
+
+    // 🔥 ОБНОВИТЬ СЧЁТ В БАЗЕ FIREBASE
+    function updateOnlineScore() {
+        firebase.database().ref("players/" + nick).set({
+            nick: nick,
+            score: balance
+        });
+    }
+
+    // 🔥 ЗАГРУЗИТЬ ТОП
+    firebase.database().ref("players").on("value", snapshot => {
+        const data = snapshot.val();
+        const list = Object.values(data || {})
+            .sort((a, b) => b.score - a.score)
+            .slice(0, 20);
+
+        drawTop(list);
+    });
+
+    function drawTop(list) {
+        const table = document.getElementById("topTable");
+        table.innerHTML =
+            "<tr><th>Место</th><th>Ник</th><th>Счёт</th></tr>";
+
+        list.forEach((p, i) => {
+            table.innerHTML += `
+                <tr>
+                    <td>${i + 1}</td>
+                    <td>${p.nick}</td>
+                    <td>${p.score}</td>
+                </tr>
+            `;
+        });
+    }
+
 </script>
 
 </body>
